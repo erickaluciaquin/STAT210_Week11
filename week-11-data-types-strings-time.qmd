@@ -1,5 +1,7 @@
 ---
 title: "Data Types - Strings, Dates, Times"
+author: "Ericka Quintero"
+date: "11 April 2025"
 format: html
 embed-resources: true
 ---
@@ -31,12 +33,18 @@ Fill in the blanks to:
 
 ```{r}
 babynames |>
-  _______(last = _________, 
-          vowel = __________) |>
-  group_by(__________) |>
-  _________(p_vowel = weighted.mean(vowel, n)) |>
-  _________ +
-  __________
+  mutate(last = str_sub(name, -1), 
+          vowel = last %in% c("a", "e", "i", "o", "u", "y")) |>
+  group_by(year, sex) |>
+  summarise(p_vowel = weighted.mean(vowel, n)) |>
+  ggplot() +
+  geom_line(mapping = aes (x = year,
+                           y = p_vowel,
+                           color = sex)) +
+  labs(x = "Year",
+       y = "Proportion of Names that End in a Vowel",
+       color = "Gender")
+  
 
 ```
 
@@ -52,8 +60,26 @@ Use the `hour` and `minute` variables in `flights` to make a new variable that s
 
 Then use a smooth line to plot the relationship between time of day and `arr_delay`.
 
-```{r}
 
+```{r}
+flights |>
+  mutate(time = hms(minutes = minute,
+                    hours = hour)) |>
+  ggplot(aes(x = time,
+             y = arr_delay)) +
+  #geom_point(alpha = 0.25) +
+  geom_smooth()
+```
+
+
+
+
+```{r}
+flights |>
+  ggplot(mapping = aes(x = sched_dep_time,
+                       y = arr_delay)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth()
 ```
 
 ## Your Turn 3
@@ -65,8 +91,7 @@ Look at the code skeleton for Your Turn 4.
 * What does each line do?
 * What will the missing parts need to do?
 
-> Insert your descriptions here
-
+> Mutate will create a new variable. Drop_na will remove missing values. 
 
 
 ## Your Turn 4
@@ -79,7 +104,10 @@ Plot the average arrival delay by day as a column chart (bar chart).
 
 ```{r}
 flights |> 
-  mutate(weekday = _______________________________) |> 
+  mutate(weekday = wday(time_hour,
+                        abbr = FALSE,
+                        label = TRUE,
+                        week_start = "Monday")) |> 
   group_by(weekday) |> 
   drop_na(arr_delay) |> 
   summarise(avg_delay = mean(arr_delay)) |> 
